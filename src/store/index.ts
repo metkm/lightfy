@@ -1,3 +1,4 @@
+import axios from "axios";
 import { defineStore } from "pinia";
 
 export const useStore = defineStore("main", {
@@ -7,6 +8,7 @@ export const useStore = defineStore("main", {
   actions: {
     setToken(token: string) {
       this.accessToken = token;
+      axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
     }
   },
   persist: true
