@@ -9,11 +9,11 @@
   }
 
   input {
-    @apply bg-neutral-900 bg-opacity-90;
+    @apply bg-transparent;
   }
 
   #app {
-    @apply flex flex-col;
+    @apply flex flex-col p-2;
     @apply bg-neutral-900 bg-opacity-90;
   }
 }
