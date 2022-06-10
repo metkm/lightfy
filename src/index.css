@@ -1,0 +1,19 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html, body {
+    @apply text-white;
+    @apply overflow-hidden;
+  }
+
+  input {
+    @apply bg-neutral-900 bg-opacity-90;
+  }
+
+  #app {
+    @apply flex flex-col;
+    @apply bg-neutral-900 bg-opacity-90;
+  }
+}
