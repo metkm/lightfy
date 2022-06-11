@@ -2,6 +2,7 @@
 import { globalShortcut } from "@tauri-apps/api";
 import { appWindow } from "@tauri-apps/api/window";
 import { ref, watch } from "vue";
+import axios from "axios";
 
 import { Command } from "../types";
 import { commands } from "../commands";
@@ -25,12 +26,23 @@ globalShortcut.register("CmdOrControl+Space", async () => {
 })
 
 document.addEventListener("keydown", event => {
+  console.log(event.code);
+
   switch (event.code) {
     case "ArrowUp":
       selected.value = Math.max(0, selected.value - 1);
       break;
     case "ArrowDown":
       selected.value = Math.min(queryCommands.value.length - 1, selected.value + 1);
+      break;
+    case "Enter":
+      if (queryCommands.value.length > 0) {
+        let callback = queryCommands.value[selected.value].do;
+        if (callback) {
+          callback()
+        }
+      }
+      
       break;
   }
 })

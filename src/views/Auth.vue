@@ -1,30 +1,44 @@
 <script setup lang="ts">
+import { generateRandomString, generateCodeChallenge, generateUrlWithParams } from '../authUtils';
 import { onMounted } from "vue";
-import { useRouter } from 'vue-router';
-import { useStore } from '../store';
 
+import { useAuth } from "../store/auth";
+import { useStore } from "../store";
+import { useRouter } from 'vue-router';
+
+const auth = useAuth();
 const store = useStore();
 const router = useRouter();
 
-onMounted(async () => {
-  let params = new URLSearchParams(window.location.href.split("#")[1]);
-  let access_token = params.get("access_token");
+const redirect_uri = import.meta.env.DEV ? "http://localhost:3000/" : "https://tauri.localhost/";
 
-  if (access_token) {
-    store.setToken(access_token);
-    router.push("/");
+onMounted(async () => {
+  const params = new URLSearchParams(window.location.search);
+  const code = params.get("code");
+
+  if (code) {
+    await store.login(code, auth.codeVerifier);
+    router.push("/home");
   }
 })
 
-const login = () => {
-  let params = new URLSearchParams({
-    client_id: "d2311472e9434eada1b4fa7de34e5063",
-    response_type: "token",
-    redirect_uri: import.meta.env.DEV ? "http://localhost:3000/auth" : "https://tauri.localhost/auth"
-  });
-  let url = `https://accounts.spotify.com/authorize?${params.toString()}`;
+const login = async () => {
+  const code_verifier = generateRandomString(64);
+  const code_challenge = await generateCodeChallenge(code_verifier);
 
-  window.location.href = url;
+  auth.codeVerifier = code_verifier;
+
+  window.location.href = generateUrlWithParams(
+    "https://accounts.spotify.com/authorize",
+    {
+      "client_id": "d2311472e9434eada1b4fa7de34e5063",
+      "response_type": "code",
+      "scope": "user-modify-playback-state",
+      redirect_uri,
+      "code_challenge_method": "S256",
+      code_challenge,
+    },
+  )
 }
 </script>
 
