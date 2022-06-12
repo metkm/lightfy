@@ -18,8 +18,11 @@ onMounted(async () => {
 
   if (code) {
     await store.login(code, auth.codeVerifier);
-    router.push("/home");
+  } else {
+    await store.refreshTokens();
   }
+  
+  router.push("/home");
 })
 
 const login = async () => {
