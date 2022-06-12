@@ -1,67 +1,67 @@
 <script setup lang="ts">
-import { globalShortcut } from "@tauri-apps/api";
-import { appWindow } from "@tauri-apps/api/window";
-import { ref, watch } from "vue";
-import axios from "axios";
+import { appWindow } from '@tauri-apps/api/window';
+import { ref, watchEffect } from 'vue';
+import { search } from '../api/search';
+import { commands } from '../commands';
 
-import { Command } from "../types";
-import { commands } from "../commands";
-import CommandVue from "../components/Command.vue";
+import { Command, TrackItem } from "../types";
+import CommandVue from '../components/Command.vue';
+import SongVue from '../components/Song.vue';
+import { computed } from '@vue/reactivity';
 
-const query = ref<string>("");
+const query = ref("");
 const queryElement = ref<HTMLInputElement | null>(null);
-const queryCommands = ref<Command[]>([]);
-const selected = ref<number>(0);
+const recommendations = ref<TrackItem[]>([]);
+const queryCommands = ref<Array<TrackItem | Command>>([]);
 
-globalShortcut.register("CmdOrControl+Space", async () => {
-  let isVisible = await appWindow.isVisible();
-  if (isVisible) {
-    appWindow.hide();
-    return;
-  }
+const allCommands = computed(() => [...queryCommands.value, ...recommendations.value])
+const currentCommand = ref(0);
 
-  appWindow.show();
-  appWindow.setFocus();
-  queryElement.value!.focus();
+appWindow.listen("tauri://focus", () => {
+  if (queryElement.value) queryElement.value.focus();
 })
 
 document.addEventListener("keydown", event => {
-  console.log(event.code);
-
   switch (event.code) {
     case "ArrowUp":
-      selected.value = Math.max(0, selected.value - 1);
+      currentCommand.value = Math.max(0, currentCommand.value - 1);
       break;
     case "ArrowDown":
-      selected.value = Math.min(queryCommands.value.length - 1, selected.value + 1);
+      currentCommand.value = Math.min(allCommands.value.length - 1, currentCommand.value + 1);
       break;
     case "Enter":
-      if (queryCommands.value.length > 0) {
-        let callback = queryCommands.value[selected.value].do;
-        if (callback) {
-          callback()
-        }
-      }
-      
       break;
   }
 })
 
-watch(query, () => {
+var queryTimeout: number;
+watchEffect(async () => {
+  let split = query.value.split(" ");
+  let leftSide = split[0];
+  let rightSide = split[1];
+
+  if (query.value.toLowerCase().startsWith("play") && rightSide) {
+    if (queryTimeout) clearTimeout(queryTimeout);
+
+    queryTimeout = window.setTimeout(async () => {
+      recommendations.value = await search(rightSide);
+    }, 1000)
+  } else {
+    recommendations.value = [];
+  }
+
   queryCommands.value = commands.filter(cmd => {
-    return cmd.title.toLowerCase().startsWith(query.value)
+    return cmd.name.toLowerCase().startsWith(leftSide);
   })
 });
 </script>
 
 <template>
-  <input ref="queryElement" v-model="query" placeholder="Command" class="outline-none font-semibold p-2">
-  <template v-for="(cmd, index) in queryCommands">
-    <CommandVue
-      :class="{ 'bg-green-800': index == selected }"
-      :title="cmd.title"
-      :description="cmd.description"
-      :icon="cmd.icon"
-    />
+  <input ref="queryElement" v-model="query" autofocus placeholder="Command" class="outline-none font-semibold p-2" />
+  <template v-for="(cmd, index) in allCommands">
+    <div :class="{ 'bg-green-600': index == currentCommand }">
+      <CommandVue v-if="cmd.type == 'command'" :title="cmd.name" :description="cmd.description" :icon="`/${cmd.icon}`" />
+      <CommandVue v-if="cmd.type == 'track'" :title="cmd.name" :description="cmd.artists[0].name" :icon="cmd.album.images[0].url" />
+    </div>
   </template>
 </template>

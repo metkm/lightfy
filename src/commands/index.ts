@@ -4,15 +4,17 @@ import { pauseSong, playSong } from "./playback";
 
 export const commands: Command[] = [
   {
-    title: "Pause",
+    name: "Pause",
     description: "Pause the current song.",
-    icon: "pause",
-    do: pauseSong
+    icon: "pause.svg",
+    callback: pauseSong,
+    type: "command"
   },
   {
-    title: "Play",
+    name: "Play",
     description: "Play a song.",
-    icon: "play",
-    do: playSong
+    icon: "play.svg",
+    callback: playSong,
+    type: "command"
   }
 ]
