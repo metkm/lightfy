@@ -1,4 +1,4 @@
-export type CommandTypes = "Play" | "Resume";
+export type CommandTypes = "Play" | "Resume" | "Pause";
 
 export interface Command {
   title: CommandTypes,

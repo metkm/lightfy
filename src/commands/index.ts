@@ -1,17 +1,18 @@
 import { Command } from "../types";
 
-import { resumeSong } from "./playback";
+import { pauseSong, playSong } from "./playback";
 
 export const commands: Command[] = [
   {
-    title: "Resume",
-    description: "Start/Resume the current song.",
-    icon: "resume",
-    do: resumeSong
+    title: "Pause",
+    description: "Pause the current song.",
+    icon: "pause",
+    do: pauseSong
   },
   {
     title: "Play",
     description: "Play a song.",
     icon: "play",
+    do: playSong
   }
 ]
