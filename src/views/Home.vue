@@ -1,13 +1,11 @@
 <script setup lang="ts">
 import { appWindow } from '@tauri-apps/api/window';
-import { ref, watchEffect } from 'vue';
-import { search } from '../api/search';
+import { ref, watchEffect, computed, watch } from 'vue';
+import { search, playSong } from '../api';
 import { commands } from '../commands';
 
 import { Command, TrackItem } from "../types";
 import CommandVue from '../components/Command.vue';
-import SongVue from '../components/Song.vue';
-import { computed } from '@vue/reactivity';
 
 const query = ref("");
 const queryElement = ref<HTMLInputElement | null>(null);
@@ -21,7 +19,7 @@ appWindow.listen("tauri://focus", () => {
   if (queryElement.value) queryElement.value.focus();
 })
 
-document.addEventListener("keydown", event => {
+document.addEventListener("keydown", async (event) => {
   switch (event.code) {
     case "ArrowUp":
       currentCommand.value = Math.max(0, currentCommand.value - 1);
@@ -30,8 +28,24 @@ document.addEventListener("keydown", event => {
       currentCommand.value = Math.min(allCommands.value.length - 1, currentCommand.value + 1);
       break;
     case "Enter":
+      let command = allCommands.value[currentCommand.value];
+      if (!command) return;
+
+      if (command.type == "track") {
+        // play the song
+        await playSong({
+          uris: [command.uri]
+        })
+      } else {
+        command.callback?.();
+      }
+
       break;
   }
+})
+
+watch(allCommands, () => {
+  currentCommand.value = Math.min(currentCommand.value, allCommands.value.length - 1);
 })
 
 var queryTimeout: number;
@@ -59,9 +73,11 @@ watchEffect(async () => {
 <template>
   <input ref="queryElement" v-model="query" autofocus placeholder="Command" class="outline-none font-semibold p-2" />
   <template v-for="(cmd, index) in allCommands">
-    <div :class="{ 'bg-green-600': index == currentCommand }">
-      <CommandVue v-if="cmd.type == 'command'" :title="cmd.name" :description="cmd.description" :icon="`/${cmd.icon}`" />
-      <CommandVue v-if="cmd.type == 'track'" :title="cmd.name" :description="cmd.artists[0].name" :icon="cmd.album.images[0].url" />
+    <div :class="{ 'bg-green-700': index == currentCommand }">
+      <CommandVue v-if="cmd.type == 'command'" :title="cmd.name" :description="cmd.description"
+        :icon="`/${cmd.icon}`" />
+      <CommandVue v-if="cmd.type == 'track'" :title="cmd.name" :description="cmd.artists[0].name"
+        :icon="cmd.album.images[0].url" />
     </div>
   </template>
 </template>

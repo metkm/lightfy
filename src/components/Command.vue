@@ -7,7 +7,7 @@ defineProps<{
 </script>
 
 <template>
-  <div class="flex gap-4 p-2">
+  <div class="flex items-center gap-4 p-2">
     <img :src="icon" class="h-10" />
     <div class="flex flex-col justify-center">
       <p class="font-semibold">{{ title }}</p>

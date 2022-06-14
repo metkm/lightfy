@@ -1,6 +1,6 @@
 import { Command } from "../types";
 
-import { pauseSong, playSong } from "./playback";
+import { pauseSong, playSong } from "../api";
 
 export const commands: Command[] = [
   {

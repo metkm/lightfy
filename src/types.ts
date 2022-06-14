@@ -5,7 +5,7 @@ export interface Command {
   description: string,
   icon: string,
   type: 'command',
-  callback?: (extra?: string) => any
+  callback?: (extra?: any) => any
 }
 
 interface Artist {

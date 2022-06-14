@@ -4,6 +4,7 @@ import { appWindow } from '@tauri-apps/api/window';
 import { onMounted } from 'vue';
 
 const keyCombo = "CmdOrControl+Space";
+const htmlElement = document.getElementsByTagName("html")[0];
 
 onMounted(async () => {
   let isRegistered = await globalShortcut.isRegistered(keyCombo);
@@ -20,6 +21,11 @@ onMounted(async () => {
     }
   })
 })
+
+window.addEventListener("resize", event => {
+  console.log(htmlElement.clientHeight, htmlElement.clientWidth);
+})
+
 </script>
 
 <template>
