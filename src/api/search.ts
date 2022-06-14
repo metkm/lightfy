@@ -9,8 +9,6 @@ export const search = async (q: string) => {
       limit: 3
     }
   });
-  
-  console.log(response.data);
 
   return response.data.tracks.items;
 }

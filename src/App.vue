@@ -21,11 +21,6 @@ onMounted(async () => {
     }
   })
 })
-
-window.addEventListener("resize", event => {
-  console.log(htmlElement.clientHeight, htmlElement.clientWidth);
-})
-
 </script>
 
 <template>
